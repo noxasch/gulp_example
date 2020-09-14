@@ -18,11 +18,12 @@ const sourcemaps = require('gulp-sourcemaps');
 const terser = require('gulp-terser-js');
 const replace = require('gulp-replace');
 const rename = require('gulp-rename');
+const concat = require('gulp-concat');
 
 // File path variables
 const files = {
-  scssPath: 'app/scss/**/*.scss',
-  jsPath: 'app/js/**/*.js'
+  scssPath: 'src/**/*.scss',
+  jsPath: 'src/**/*.js'
 }
 
 // sass task
@@ -39,18 +40,21 @@ function scssTask() {
 // JS task
 function jsTask() {
   return src(files.jsPath)
+    .pipe(sourcemaps.init())
     .pipe(concat('all.js')) // final output file name
     .pipe(terser())
+    .pipe(sourcemaps.write('.'))
+    .pipe(rename({ suffix: '.min' }))
     .pipe(dest('dist'));
 };
 
 // Cachebusting task
-const cbstring = new Date().getTime();
-function cacheBustingTask() {
-  return src(['index'])
-    .pipe(replace(/cb=\d+/g, 'cb=' + cbString))
-    .pipe(dest('.'));
-}
+// function cacheBustingTask() {
+//   const cbstring = new Date().getTime();
+//   return src(['index'])
+//     .pipe(replace(/cb=\d+/g, 'cb=' + cbstring))
+//     .pipe(dest('.'));
+// }
 
 // Watch task - monitor file for changes
 function watchTask() {
@@ -61,6 +65,6 @@ function watchTask() {
 // Default task
 exports.default = series(
   parallel(scssTask, jsTask),
-  cacheBustingTask,
+  // cacheBustingTask,
   watchTask);
 
